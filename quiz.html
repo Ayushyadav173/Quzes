@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple Quiz App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #0f172a;
+      padding: 20px;
+    }
+
+    .container {
+      background: #020617;
+      color: #e5e7eb;
+      max-width: 420px;
+      width: 100%;
+      border-radius: 16px;
+      padding: 20px 18px 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      border: 1px solid #1f2937;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 4px;
+      color: #f9fafb;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      text-align: center;
+      color: #9ca3af;
+      margin-bottom: 18px;
+    }
+
+    .question-number {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+
+    .question-text {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      line-height: 1.4;
+      color: #e5e7eb;
+    }
+
+    .options {
+      list-style: none;
+      margin-bottom: 16px;
+    }
+
+    .option {
+      margin-bottom: 8px;
+    }
+
+    .option button {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #1f2937;
+      outline: none;
+      background: #020617;
+      color: #e5e7eb;
+      text-align: left;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease,
+        background 0.12s ease, border-color 0.12s ease;
+    }
+
+    .option button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 12px rgba(15, 23, 42, 0.7);
+      border-color: #4b5563;
+    }
+
+    .option button.selected {
+      border-color: #38bdf8;
+      background: #0b1120;
+    }
+
+    .option button.correct {
+      background: #14532d;
+      border-color: #22c55e;
+    }
+
+    .option button.wrong {
+      background: #450a0a;
+      border-color: #f97373;
+    }
+
+    .bottom-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      font-size: 14px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      outline: none;
+      background: #38bdf8;
+      color: #020617;
+      font-weight: 600;
+      transition: transform 0.12s ease, box-shadow 0.12s ease,
+        background 0.12s ease;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(56, 189, 248, 0.5);
+      background: #0ea5e9;
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .result {
+      text-align: center;
+      padding: 12px 10px 4px;
+    }
+
+    .result h2 {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .result p {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 12px;
+    }
+
+    .score-highlight {
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    @media (max-width: 480px) {
+      .title {
+        font-size: 20px;
+      }
+      .question-text {
+        font-size: 15px;
+      }
+      .btn {
+        font-size: 13px;
+        padding: 7px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="quiz-box">
+      <div class="title">Quick Quiz</div>
+      <div class="subtitle">Test your HTML, CSS & JS basics ⚡</div>
+
+      <div class="question-number" id="question-number">
+        Question 1 of 5
+      </div>
+      <div class="question-text" id="question-text">
+        Loading question...
+      </div>
+
+      <ul class="options" id="options-list">
+        <!-- Options buttons yahan JS se aayenge -->
+      </ul>
+
+      <div class="bottom-row">
+        <div class="status" id="status-text">Select an option</div>
+        <button class="btn" id="next-btn" disabled>Next</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==== QUIZ DATA ==== (yahan tum apne questions change/add kar sakte ho)
+    const questions = [
+      {
+        question: "HTML ka full form kya hai?",
+        options: [
+          "Hyper Trainer Marking Language",
+          "Hyper Text Markup Language",
+          "Hyper Text Making Language",
+          "Hyperlinks Text Markup Language",
+        ],
+        answer: 1,
+      },
+      {
+        question: "CSS ka use kis cheez ke liye hota hai?",
+        options: [
+          "Website ka structure",
+          "Database manage karne ke liye",
+          "Website ko style/beautify karne ke liye",
+          "Server side code likhne ke liye",
+        ],
+        answer: 2,
+      },
+      {
+        question: "JavaScript mainly kis side par chalti hai?",
+        options: ["Browser (client side)", "Database", "Server room", "RAM ke bina"],
+        answer: 0,
+      },
+      {
+        question: "Correct HTML tag for a main heading?",
+        options: ["<heading>", "<h6>", "<h1>", "<head>"],
+        answer: 2,
+      },
+      {
+        question: "CSS me text ka color kaise change karte hain?",
+        options: [
+          "font-color:",
+          "color:",
+          "text-style:",
+          "change-color:",
+        ],
+        answer: 1,
+      },
+    ];
+
+    // ==== STATE VARIABLES ====
+    let currentQuestionIndex = 0;
+    let selectedOptionIndex = null;
+    let score = 0;
+    let isAnswerLocked = false;
+
+    // ==== DOM ELEMENTS ====
+    const questionNumberEl = document.getElementById("question-number");
+    const questionTextEl = document.getElementById("question-text");
+    const optionsListEl = document.getElementById("options-list");
+    const statusTextEl = document.getElementById("status-text");
+    const nextBtn = document.getElementById("next-btn");
+    const quizBox = document.getElementById("quiz-box");
+
+    // ==== FUNCTIONS ====
+
+    function loadQuestion() {
+      const current = questions[currentQuestionIndex];
+      questionNumberEl.textContent = `Question ${
+        currentQuestionIndex + 1
+      } of ${questions.length}`;
+      questionTextEl.textContent = current.question;
+
+      // Clear previous options
+      optionsListEl.innerHTML = "";
+      selectedOptionIndex = null;
+      isAnswerLocked = false;
+      nextBtn.disabled = true;
+      statusTextEl.textContent = "Select an option";
+
+      // Create new option buttons
+      current.options.forEach((optionText, index) => {
+        const li = document.createElement("li");
+        li.classList.add("option");
+
+        const button = document.createElement("button");
+        button.textContent = optionText;
+
+        button.addEventListener("click", () => selectOption(index, button));
+
+        li.appendChild(button);
+        optionsListEl.appendChild(li);
+      });
+    }
+
+    function selectOption(index, buttonElement) {
+      if (isAnswerLocked) return;
+
+      // Remove 'selected' from all buttons
+      const allButtons = optionsListEl.querySelectorAll("button");
+      allButtons.forEach((btn) => btn.classList.remove("selected"));
+
+      // Mark current as selected
+      buttonElement.classList.add("selected");
+      selectedOptionIndex = index;
+      nextBtn.disabled = false;
+      statusTextEl.textContent = "Click Next to lock your answer";
+    }
+
+    function lockAnswerAndNext() {
+      if (selectedOptionIndex === null) return;
+
+      const current = questions[currentQuestionIndex];
+      const allButtons = optionsListEl.querySelectorAll("button");
+
+      // Lock answer: show correct/wrong colors
+      isAnswerLocked = true;
+      allButtons.forEach((btn, index) => {
+        btn.classList.remove("selected");
+        if (index === current.answer) {
+          btn.classList.add("correct");
+        }
+        if (index === selectedOptionIndex && index !== current.answer) {
+          btn.classList.add("wrong");
+        }
+      });
+
+      // Score update
+      if (selectedOptionIndex === current.answer) {
+        score++;
+        statusTextEl.textContent = "Correct ✅";
+      } else {
+        statusTextEl.textContent = "Wrong ❌";
+      }
+
+      // Button text change
+      if (currentQuestionIndex === questions.length - 1) {
+        nextBtn.textContent = "Show Result";
+      } else {
+        nextBtn.textContent = "Next Question";
+      }
+
+      // Next click will show next question or result
+      nextBtn.onclick = () => {
+        if (currentQuestionIndex < questions.length - 1) {
+          currentQuestionIndex++;
+          nextBtn.textContent = "Next";
+          nextBtn.onclick = lockAnswerAndNext;
+          loadQuestion();
+        } else {
+          showResult();
+        }
+      };
+    }
+
+    function showResult() {
+      quizBox.innerHTML = `
+        <div class="title">Quiz Completed 🎉</div>
+        <div class="result">
+          <h2>You scored <span class="score-highlight">${score}</span> out of ${
+        questions.length
+      }</h2>
+          <p>${
+            score === questions.length
+              ? "Perfect! Tum toh pro ho 🔥"
+              : score >= questions.length / 2
+              ? "Achha kiya! Thoda aur practise karo 💪"
+              : "Tension mat lo, practise se sab aata hai 🙂"
+          }</p>
+          <button class="btn" id="play-again-btn">Play Again</button>
+        </div>
+      `;
+
+      const playAgainBtn = document.getElementById("play-again-btn");
+      playAgainBtn.addEventListener("click", resetQuiz);
+    }
+
+    function resetQuiz() {
+      currentQuestionIndex = 0;
+      score = 0;
+
+      // Reset HTML structure
+      quizBox.innerHTML = `
+        <div class="title">Quick Quiz</div>
+        <div class="subtitle">Test your HTML, CSS & JS basics ⚡</div>
+
+        <div class="question-number" id="question-number">
+          Question 1 of ${questions.length}
+        </div>
+        <div class="question-text" id="question-text">
+          Loading question...
+        </div>
+
+        <ul class="options" id="options-list"></ul>
+
+        <div class="bottom-row">
+          <div class="status" id="status-text">Select an option</div>
+          <button class="btn" id="next-btn" disabled>Next</button>
+        </div>
+      `;
+
+      // Dubara elements ko pakdo
+      const newQuestionNumberEl = document.getElementById("question-number");
+      const newQuestionTextEl = document.getElementById("question-text");
+      const newOptionsListEl = document.getElementById("options-list");
+      const newStatusTextEl = document.getElementById("status-text");
+      const newNextBtn = document.getElementById("next-btn");
+
+      // Global references update
+      questionNumberEl.textContent = newQuestionNumberEl.textContent;
+      questionTextEl.textContent = newQuestionTextEl.textContent;
+      optionsListEl.innerHTML = newOptionsListEl.innerHTML;
+      statusTextEl.textContent = newStatusTextEl.textContent;
+
+      // Actually re-assign global variables to new elements
+      // (best: re-query using document.getElementById)
+      location.reload(); // simple approach: page reload karo
+    }
+
+    // ==== INITIAL SETUP ====
+    loadQuestion();
+    nextBtn.onclick = lockAnswerAndNext;
+  </script>
+</body>
+</html>
